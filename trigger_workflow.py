@@ -1,31 +1,35 @@
-import json
 import requests
+import json
 
+# Define the repository and event details
+repository = 'facundofacio/repository_dispatch_test'
+event_type = 'custom_event_type'
+with open("config.json") as json_file:
+    PERSONAL_ACCESS_TOKEN = json.load(json_file).get("token")
+# Create the payload for the repository_dispatch event
+payload = {
+    'event_type': event_type,
+    'client_payload': {
+        'param1': 'Hello',
+        'param2': 'World!'
+    }
+}
 
-def trigger_github_action(owner, repo, workflow_file, ref):
-    api_url = f"https://api.github.com/repos/{owner}/{repo}/actions/workflows/{workflow_file}/dispatches"
-    headers = {
+# Make a POST request to trigger the GitHub Action workflow
+response = requests.post(
+    url=f'https://api.github.com/repos/{repository}/dispatches',
+    headers={
         "Accept": "application/vnd.github.v3+json",
-        "Authorization": "Bearer <YOUR_PERSONAL_ACCESS_TOKEN>"
-    }
-    payload = {
-        "ref": ref
-    }
-    response = requests.post(api_url, headers=headers, json=payload)
+        'Authorization': f'Bearer {PERSONAL_ACCESS_TOKEN}',
+        "Content-Type": "application/json",
+        },
+    json=payload
+    )
 
-    if response.status_code == 204:
-        print("GitHub Action triggered successfully.")
-    else:
-        print(
-            f"Failed to trigger GitHub Action. Status code: {response.status_code}.")
-        print(response.text)
-
-
-# Set the repository information and workflow file name
-owner = "facundofacio"
-repo = "repository_dispatch_test"
-workflow_file = ".github/workflows/triggered_workflow.yml"
-ref = "main"  # e.g., "main" or "refs/heads/main"
-
-# Call the function to trigger the GitHub Action
-trigger_github_action(owner, repo, workflow_file, ref)
+# Check the response status code
+if response.status_code == 204:
+    print(f"Workflow triggered successfully for event: {event_type}")
+else:
+    print(
+        f"Failed to trigger workflow. Response status code: {response.status_code}")
+    print(response.text)

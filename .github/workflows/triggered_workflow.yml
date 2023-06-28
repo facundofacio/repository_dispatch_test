@@ -2,6 +2,7 @@ name: Triggered Workflow
 
 on:
   repository_dispatch:
+    types: [custom_event_type]
 
 jobs:
   build:
@@ -13,3 +14,8 @@ jobs:
 
       - name: Print Hello World
         run: echo "Hello World!"
+
+      - name: Print Event Parameters
+        run: |
+          echo "Param 1: ${{ github.event.client_payload.param1 }}"
+          echo "Param 2: ${{ github.event.client_payload.param2 }}"
